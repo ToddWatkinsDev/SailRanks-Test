@@ -1,0 +1,13 @@
+[project]
+name = "sailranks-client"
+version = "0.1.0"
+description = "Authorised Python automation client for SailRanks web forms"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "python-dotenv>=1.0",
+    "requests>=2.32",
+]
+
+[project.scripts]
+sailranks = "sailranks_client:main"
