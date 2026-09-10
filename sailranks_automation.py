@@ -141,8 +141,39 @@ def prompt_for_players(path: str) -> list[str]:
         selected.append(value)
 
 
-def prompt_for_player(players: list[str]) -> str:
-    print("Player: ", end="", flush=True)
+def prompt_for_result_players(path: str) -> tuple[list[str], list[str]]:
+    players = read_lines([path])
+    if not players:
+        raise ValueError(f"No players found in {path!r}")
+
+    print("Enter finishing players in order. Press Tab to autocomplete; blank line ends the list.")
+    finish = []
+    while True:
+        value = prompt_for_player(players, "Finish player: ").strip()
+        if not value:
+            break
+        finish.append(result_player_value(value))
+
+    print("Enter DNS players. Press Tab to autocomplete; blank line ends the list.")
+    dns = []
+    while True:
+        value = prompt_for_player(players, "DNS player: ").strip()
+        if not value:
+            break
+        dns.append(result_player_value(value))
+    return finish, dns
+
+
+def result_player_value(value: str) -> str:
+    match = re.fullmatch(r"(\d+) - (.+) - \[([^]]+)\]", value)
+    if not match:
+        raise ValueError(f"Invalid player entry: {value!r}")
+    player_id, name, country = match.groups()
+    return f"{country} {player_id} {name}"
+
+
+def prompt_for_player(players: list[str], label: str = "Player: ") -> str:
+    print(label, end="", flush=True)
     value: list[str] = []
     while True:
         character = msvcrt.getwch()
@@ -489,6 +520,7 @@ def build_parser() -> argparse.ArgumentParser:
     result.add_argument("--race-id", required=True)
     result.add_argument("--finish", action="append", default=[])
     result.add_argument("--dns", action="append", default=[])
+    result.add_argument("--players-file", default="players.txt")
     result.add_argument("--cver", default="14")
     result.add_argument("--radix", default="bnmlaaxudq")
 
@@ -540,11 +572,17 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         if args.command == "submit-result":
+            finish = read_lines(args.finish)
+            dns = read_lines(args.dns)
+            if not args.finish and not args.dns:
+                finish, dns = prompt_for_result_players(args.players_file)
+            if not finish:
+                raise ValueError("At least one finishing player is required")
             response = client.submit_single_race_result(
                 args.regatta_id,
                 args.race_id,
-                read_lines(args.finish),
-                read_lines(args.dns),
+                finish,
+                dns,
                 args.cver,
                 args.radix,
             )

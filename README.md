@@ -200,6 +200,14 @@ batchDNS=CAN 6785 MudCreek
 
 The order of repeated `--finish` options determines the finishing positions. DNS means Did Not Start and is sent through `batchDNS`.
 
+To enter results interactively with Tab completion from `players.txt`, omit both `--finish` and `--dns`:
+
+```powershell
+python .\sailranks_automation.py submit-result 12631 --race-id 1
+```
+
+Select finishing players in order, press Enter on a blank prompt, then select DNS players. Use `--players-file` to complete from a different player list.
+
 Entries can also be read from files. For example, `finish.txt`:
 
 ```text
@@ -445,6 +453,10 @@ python .\sailranks_automation.py submit-result 12631 `
     --finish "JEY 5835 Jerseytbw" `
     --finish "DEN 6504 Jakob" `
     --dns "CAN 6785 MudCreek"
+> Note
+>
+> To add the medal race it is just the final race number, so if you have `5` races + medal race then medal race will be `6`
+>
 
 # Retrieve and export results
 python .\sailranks_automation.py results 12631
